@@ -11,5 +11,128 @@ editor: visual
 I will first load the required packages.
 
 ```{r}
+library(ggplot2)
+library(brms)
+library(ggeffects)
+library(tidyverse)
+library(readxl)
+library(here)
+library(dplyr)
+#install.packages("ggtext")
+library(ggtext)
+krat <- read.csv(here("final_krat_data_2026.csv"))
+
+```
+
+# Exploring Head vs. Body as size proxy
+
+```{r}
+head(krat)
+#Plot the body length vs head size
+krat %>%
+  ggplot(aes(y= Head_Length, x = Body_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+#Plotting standard measurements against eachother
+krat %>%
+  ggplot(aes(x = Head_Length, y = Foot_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+#Plotting body vs foot
+krat %>%
+  ggplot(aes(x = Body_Length, y = Foot_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+#plotting head length vs ear length
+krat %>%
+  ggplot(aes(x = Head_Length, y = Ear_Length_Notch, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+#Plotting body length vs ear length
+krat %>%
+  ggplot(aes(x = Body_Length, y = Ear_Length_Notch, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+   coord_cartesian(ylim = c(10, 30)) #crop out outlier (120 mm in ear length)
+#Plotting finger length measurements vs Head length measurements
+krat %>%
+  ggplot(aes(x = Head_Length, y = Finger_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+
+```
+
+# Fixing Ear length outlier
+
+I found an outlier with a value over 120 in the ear length row. Here I fixed that issue using the filter fnct. We can see in these graphs the head length differentiates between the two species better than body length, but that no matter what there is significant overlap in measurements when using the ear length
+
+```{r}
+#Filter out the ear outlier
+kratf <- krat |> filter(Ear_Length_Notch <30)
+
+#plotting head length vs ear length
+kratf %>%
+  ggplot(aes(x = Head_Length, y = Ear_Length_Notch, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+#Plotting body length vs ear length
+kratf %>%
+  ggplot(aes(x = Body_Length, y = Ear_Length_Notch, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+```
+
+# Testing graphs
+
+```{r}
+#plotting finger length vs ear length
+kratf %>%
+  ggplot(aes(x = Finger_Length, y = Ear_Length_Notch, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+#Running bernouilli model to predict species based on ear, finger, head
+m.bern.finger.ear.h <- brm(Species ~ 1 + Ear_Length_Notch + Finger_Length+ Head_Length, 
+                        data = kratf, 
+                        family = bernoulli(), 
+                        chains = 4, iter = 2000,
+                        file = "output/m.bern.body") 
+
+#summary model
+summary(m.bern.finger.ear.h)
+plot(m.bern.finger.ear.h)
+
+#Predict the response based on the model and plot it
+pred.m.finger.ear.h <- predict_response(m.bern.finger.ear.h)
+plot(pred.m.finger.ear.h, show_data = TRUE)
+
+#Check the probability of each species
+pp_check(m.bern.finger.ear.h, type="scatter_avg")
+
+#Use function to check if these were right
+fitted(m.bern.finger.ear.h)
+
+#Running bernouilli model to predict species based on finger length and head
+m.bern.finger <- brm(Species ~ 1 + Finger_Length + Head_Length, 
+                        data = kratf, 
+                        family = bernoulli(), 
+                        chains = 4, iter = 2000,
+                        file = "output/m.bern.finger") 
+
+#summary model
+summary(m.bern.finger)
+plot(m.bern.finger)
+
+#Predict the response based on the model and plot it
+pred.m.finger <- predict_response(m.bern.finger)
+plot(pred.m.finger, show_data = TRUE)
+
+#Check the probability of each species
+pp_check(m.bern.finger, type="scatter_avg")
+
+#Use function to check if these were right
+fitted(m.bern.finger)
 
 ```
