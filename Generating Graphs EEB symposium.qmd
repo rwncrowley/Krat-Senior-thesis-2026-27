@@ -1,0 +1,15 @@
+---
+title: "Generating Graphs EEB symposium"
+format: html
+editor: visual
+---
+
+# 06-01-2026 EEB symposium graph generation
+
+## Set up
+
+I will first load the required packages.
+
+```{r}
+
+```
