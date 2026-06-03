@@ -136,3 +136,329 @@ pp_check(m.bern.finger, type="scatter_avg")
 fitted(m.bern.finger)
 
 ```
+
+# Final visualizations
+
+```{r}
+#This is finger length vs. head length
+kratf %>%
+  ggplot(aes(y= Finger_Length, x = Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")+ theme_bw()+
+  theme(
+    legend.text=element_text(face="italic"),
+    legend.position=c(0.85,0.2),
+    plot.title=element_markdown(hjust=0.5)
+        )+
+  scale_color_manual(values=c("darkturquoise","palevioletred"))+
+  labs(
+    x="Head length",
+    y="Finger length",
+    title="Finger Length vs. Head length of 
+    <br>*Dipodomys heermanni* and *Dipodomys venustus*"
+  )
+#This is the hand width vs. head length
+kratf %>%
+  ggplot(aes(y= Hand_Width, x = Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")+ theme_bw()+
+  theme(
+    legend.text=element_text(face="italic"),
+    legend.position=c(0.85,0.2),
+    plot.title=element_markdown(hjust=0.5)
+        )+
+  scale_color_manual(values=c("darkturquoise","palevioletred"))+
+  labs(
+    x="Head length",
+    y="Hand Width",
+    title="Hand Width vs. Head length of 
+    <br>*Dipodomys heermanni* and *Dipodomys venustus*"
+  )
+
+
+```
+
+# Finger length graphs
+
+```{r}
+#Running bernouilli model to predict species based on finger length and head
+m.bern.finger <- brm(Species ~ 1 + Finger_Length + Head_Length, 
+                        data = kratf, 
+                        family = bernoulli(), 
+                        chains = 4, iter = 2000,
+                        file = "output/m.bern.finger") 
+
+#summary model
+summary(m.bern.finger)
+plot(m.bern.finger)
+
+#Predict the response based on the model and plot it
+pred.m.finger <- predict_response(m.bern.finger)
+plot(pred.m.finger, show_data = TRUE)
+
+#Check the probability of each species
+pp_check(m.bern.finger, type="scatter_avg")
+
+#Use function to check if these were right
+fitted(m.bern.finger)
+
+#Predict the response based on the model and plot it
+pred.m.finger <- predict_response(m.bern.finger)
+#plot this
+plot(pred.m.finger, show_data = TRUE)
+head(pred.m.finger$Finger_Length)
+#Make model finger into its own data frame to plot
+df.finger <- data.frame(pred.m.finger$Finger_Length)
+head(df.finger)
+
+
+#Create the plot from before but including error and prettier
+pred.m.finger <- df.finger|> ggplot(mapping=aes(y=predicted, x=x))+
+#Add error bars using the confidence interval as the error bars
+geom_errorbar(aes(ymin = conf.low, ymax = conf.high, color = std.error), width = 0.5, linewidth = 0.75)+
+  geom_point(size = 2)+ scale_x_continuous(breaks = unique(df.finger$x))+
+#Make it pretty
+theme_bw()+
+  ylim(0,1)+
+  theme(
+    legend.text=element_text(face="italic"),
+    plot.title=element_markdown(hjust=0.5))+
+  scale_color_gradient(low= "black", high = "maroon")+
+  labs(
+    x="Finger length (mm)",
+    y="Probability of Species",
+    title="Species probability based on finger length and head length values"
+  )+
+    labs(color = "Error")
+print(pred.m.finger)
+
+
+
+pred.m.finger <- predict_response(m.bern.finger)
+#plot thi
+plot(pred.m.finger, show_data = TRUE)
+head(pred.m.finger$Head_Length)#a frame to plot
+df.head <- data.frame(pred.m.finger$Head_Length)
+head(df.head)
+
+
+#Create the plot from before but including error and prettier
+pred.m.finger.head <- df.head |> ggplot(mapping=aes(y=predicted, x=x))+
+#Add error bars using the confidence interval as the error bars
+geom_errorbar(aes(ymin = conf.low, ymax = conf.high, color = std.error), width = 0.5, linewidth = 0.75)+
+  geom_point(size = 2)+ scale_x_continuous(breaks = unique(df.head$x))+
+#Make it pretty
+theme_bw()+
+  #Change y axis to be 0-1
+  ylim(0,1)+
+  theme(
+    legend.text=element_text(face="italic"),
+    plot.title=element_markdown(hjust=0.5))+
+  scale_color_gradient(low= "black", high = "maroon")+
+  labs(
+    x="Head length (mm)",
+    y="Probability of Species",
+    title="Species probability based on finger length and head length values"
+  )+
+    labs(color = "Error")
+print(pred.m.finger.head)
+
+
+#Create vector using values from model
+Pred.sp <- fitted(m.bern.finger)
+head(Pred.sp)
+#Filter df for only observations including finger length AKA get rid of NAs
+#df2 <- df |> filter(Finger_Length )
+df_filtered <- kratf[!is.na(kratf$Finger_Length) & !is.na(kratf$Head_Length), ]
+
+nrow(df_filtered)
+# Create as column
+df_filtered$Probability.sp <- NA
+head(df_filtered)
+
+#Create new data frame using the vector
+Pred.sp.data <- data.frame(Pred.sp)
+head(Pred.sp.data$Estimate)
+Pred.sp.est <- Pred.sp.data$Estimate
+
+#showing rows of each
+nrow(df_filtered)
+length(Pred.sp.data$Estimate)
+#Add data estimate to new column
+df_filtered$Probability.sp <- Pred.sp.data$Estimate 
+head(df_filtered)
+#Should we add the error too???
+
+
+#boxplot!!!!
+pred.finger.boxplot <- df_filtered |> ggplot(mapping = aes(y = Probability.sp, x = Species, color = Species))+geom_boxplot()+geom_point()+geom_jitter(width = 0.2, height = 0)+theme_bw()+
+  theme(
+    legend.text=element_text(face="italic"),
+    plot.title=element_markdown(hjust=0.1)
+        )+
+  scale_color_manual(values=c("darkturquoise","palevioletred"))+
+  labs(
+    x="Actual Species",
+    y="Probability of Species",
+    title="Testing Accuracy of finger length and head length based species predictions"
+  )
+print(pred.finger.boxplot)
+```
+
+# Hand width graphs
+
+```{r}
+#Running bernouilli model to predict species based on hand W and head L
+m.bern.handW <- brm(Species ~ 1 + Hand_Width + Head_Length, 
+                        data = kratf, 
+                        family = bernoulli(), 
+                        chains = 4, iter = 2000,
+                        file = "output/m.bern.handW") 
+
+#summary model
+summary(m.bern.handW)
+plot(m.bern.handW)
+
+#Predict the response based on the model and plot it
+pred.m.handW <- predict_response(m.bern.handW)
+plot(pred.m.handW, show_data = TRUE)
+
+#Check the probability of each species
+pp_check(m.bern.handW, type="scatter_avg")
+
+#Use function to check if these were right
+fitted(m.bern.handW)
+
+#Predict the response based on the model and plot it
+pred.m.handW <- predict_response(m.bern.handW)
+#plot this
+plot(pred.m.handW, show_data = TRUE)
+head(pred.m.handW$Hand_Width)
+#Make model finger into its own data frame to plot
+df.handW <- data.frame(pred.m.handW$Hand_Width)
+head(df.handW)
+
+
+#Create the plot from before but including error and prettier
+pred.m.handW <- df.handW|> ggplot(mapping=aes(y=predicted, x=x))+
+#Add error bars using the confidence interval as the error bars
+geom_errorbar(aes(ymin = conf.low, ymax = conf.high, color = std.error), width = 0.5, linewidth = 0.75)+
+  geom_point(size = 2)+ scale_x_continuous(breaks = unique(df.handW$x))+
+#Make it pretty
+theme_bw()+
+  ylim(0,1)+
+  theme(
+    legend.text=element_text(face="italic"),
+    plot.title=element_markdown(hjust=0.5))+
+  scale_color_gradient(low= "black", high = "maroon")+
+  labs(
+    x="Hand Width (mm)",
+    y="Probability of Species",
+    title="Species probability based on Hand Width and Head Length Values"
+  )+
+    labs(color = "Error")
+print(pred.m.handW)
+
+
+
+pred.m.handW <- predict_response(m.bern.handW)
+#plot thi
+plot(pred.m.handW, show_data = TRUE)
+head(pred.m.handW$Head_Length)#a frame to plot
+df.hand.head <- data.frame(pred.m.handW$Head_Length)
+head(df.hand.head)
+
+
+#Create the plot from before but including error and prettier
+pred.m.hand.head <- df.hand.head |> ggplot(mapping=aes(y=predicted, x=x))+
+#Add error bars using the confidence interval as the error bars
+geom_errorbar(aes(ymin = conf.low, ymax = conf.high, color = std.error), width = 0.5, linewidth = 0.75)+
+  geom_point(size = 2)+ scale_x_continuous(breaks = unique(df.hand.head$x))+
+#Make it pretty
+theme_bw()+
+  theme(
+    legend.text=element_text(face="italic"),
+    plot.title=element_markdown(hjust=0.5))+
+  scale_color_gradient(low= "black", high = "maroon")+
+  labs(
+    x="Head length (mm)",
+    y="Probability of Species",
+    title="Species probability based on hand width and head length values"
+  )+
+    labs(color = "Error")
+print(pred.m.hand.head)
+
+
+#Create vector using values from model
+Pred.sp.h <- fitted(m.bern.handW)
+head(Pred.sp.h)
+
+#Filter df for only observations including finger length AKA get rid of NAs
+#df2 <- df |> filter(Finger_Length )
+df_filtered_h <- kratf[!is.na(kratf$Hand_Width) & !is.na(kratf$Head_Length), ]
+
+nrow(df_filtered_h)
+# Create as column
+df_filtered_h$Probability.sp <- NA
+head(df_filtered_h)
+
+#Create new data frame using the vector
+Pred.sp.data.h <- data.frame(Pred.sp.h)
+head(Pred.sp.data.h$Estimate)
+Pred.sp.est.h <- Pred.sp.data.h$Estimate
+
+#showing rows of each
+nrow(df_filtered_h)
+length(Pred.sp.data.h$Estimate)
+#Add data estimate to new column
+df_filtered_h$Probability.sp <- Pred.sp.data.h$Estimate 
+head(df_filtered_h)
+#Should we add the error too???
+
+
+#boxplot!!!!
+pred.handW.boxplot <- df_filtered_h |> ggplot(mapping = aes(y = Probability.sp, x = Species, color = Species))+geom_boxplot()+geom_point()+geom_jitter(width = 0.2, height = 0)+theme_bw()+
+  theme(
+    legend.text=element_text(face="italic"),
+    plot.title=element_markdown(hjust=0.1)
+        )+
+  scale_color_manual(values=c("darkturquoise","palevioletred"))+
+  labs(
+    x="Actual Species",
+    y="Predicted Species",
+    title="Testing Accuracy of Hand Width and Head Length based species predictions"
+  )
+print(pred.handW.boxplot)
+
+```
+
+\
+
+
+#Create new data frame using the vector
+Pred.sp.data.h \<- data.frame(Pred.sp)
+head(Pred.sp.data.h\$Estimate)
+Pred.sp.est.h \<- Pred.sp.data.h\$Estimate
+
+#showing rows of each
+nrow(df_filtered)
+length(Pred.sp.data\$Estimate)
+#Add data estimate to new column
+df_filtered\$Probability.sp \<- Pred.sp.data\$Estimate
+head(df_filtered)
+#Should we add the error too???
+
+
+#boxplot!!!!
+pred.finger.boxplot \<- df_filtered \|\> ggplot(mapping = aes(y = Probability.sp, x = Species, color = Species))+geom_boxplot()+geom_point()+geom_jitter(width = 0.2, height = 0)+theme_bw()+
+theme(
+legend.text=element_text(face="italic"),
+plot.title=element_markdown(hjust=0.5)
+)+
+scale_color_manual(values=c("darkturquoise","palevioletred"))+
+labs(
+x="Species",
+y="Predictive Power",
+title="Testing Accuracy of finger length based species predictions"
+)
+print(pred.finger.boxplot)
