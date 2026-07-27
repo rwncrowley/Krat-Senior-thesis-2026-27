@@ -22,6 +22,15 @@ library(dplyr)
 library(ggtext)
 krat <- read.csv(here("final_krat_data_2026.csv"))
 
+#Checking that observation are unique
+head(krat)
+length(krat$OBJECTID)
+krat.tag.unique <- unique(krat$Tag)
+print(krat.tag.unique)
+length(krat$Tag)
+#Finding the distibution of observations betweens species 35:29
+unique(krat$Species)
+table(krat$Species)
 ```
 
 # Exploring Head vs. Body as size proxy
