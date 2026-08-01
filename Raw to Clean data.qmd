@@ -362,3 +362,13 @@ Reproductive stage – if NA assume non-repro
 library(readr)
 write_csv(final_krat_data, "Clean...kratdata7_31_2026.csv")
 ```
+
+# Getting body measurements for dominique
+
+```{r}
+dominiquekratdata <- final_krat_data |> select (Body_Length)
+dominiquekratdata$Body_Length |> mean(na.rm = TRUE)
+#dihe body length mean: 105.5821 mm
+#print(dominiquekratdata$Body_Length)
+#Lowest value recorded 92 mm, highest value recorted 128 mm
+```
