@@ -23,12 +23,13 @@ library(ggtext)
 #df2 is oldest data before november 2025 before krat n other data was split
 df2 <- read_excel("1_29Small_Mammal_Observations_TableToExcel.xlsx")
 #Load in new data most recent 7_26 -- from this summer after june 30,2026
-df3 <- read_excel("Krat_data_7.26.26.xlsx") 
+df3 <- read_excel("New_App_krat_data_7_31_2026.xls") 
 #7_26 oldkratdata2026 is the same dataset as 1_29krat data but with new values added... replace any df1
-df1<- read_excel("7_26oldkratdata2026.xls")
+df1<- read_excel("7_31oldkratdata_2026.xls")
+
 ```
 
-# Step 1: Filter Dipodomys
+# Step 1: Filter Dipodomys df2
 
 ```{r}
 df2_Difiltered <- df2 %>%
@@ -37,7 +38,7 @@ df2_Difiltered <- df2 %>%
 
 ```
 
-# Step 2: Extract Head widths
+# Step 1.5: Extract Head widths df2
 
 ```{r}
 #Distinguish pm + b
@@ -68,74 +69,231 @@ df2_head_mb_cleaned <- df2_Difiltered %>%
       TRUE ~ NA_real_
     )
   )
-
+print(df2_head_mb_cleaned)
+#Extract forelimb length???? from notes
 ```
 
-# Step 3: rename for merge
+# Step 1.7: Fix Notes in df2 (oldest data set 2025)
+
+#move tissue sample values, forelimb length values, KRAT_Foot_Length values to foot length, bolea, maxillary, tissue samples from notes, weight calculations done, location name corrected, etc
 
 ```{r}
-df2_renametodf1 <- df2_head_mb_cleaned %>%
-  rename(
-    Notes = KRAT_Notes,
-    Toe_Length = KRAT_Hind_Toe_Length,
-    Hind_Limb_Length = KRAT_Hind_Limb_Length,
-    Foot_Width = KRAT_Foot_Width_mm,
-    Foot_Length = KRAT_Foot_Length_mm,
-    Hand_Width = KRAT_Hand_Width_mm,
-    Finger_Length = KRAT_Finger_Length,
-    Wrist_Width = KRAT_Wrist_Width_mm,
-    Head_Length = KRAT_Head_Length_mm,
-    Tag = Tag_Number,
-    Weight_Animal_Only = Animal_Weight_g,
-    LOC = location_code,
-    Ear_Length_Notch = Ear_mm,
-    Tail_Length = Tail_mm,
-    Body_Length = Body_mm,
-    Genus = genus
-  ) %>%
-  # Remove irrelevant or temporary columns (teeth: No records, Head width-: changed to other columns)
-  select(-KRAT_Teeth, -KRAT_Head_Width_mm, -all_nums, -all_labels, -num1, -num2, -lab1, -lab2)
+#Create a csv so I can edt in excel
+#write_csv(df2_head_mb_cleaned, "krat_hand_edited.....csv")
 
-#Rename df3 for merge
-head(df3)
-df3_renamed <- df3 |>
-    rename(
-    Toe_Length = Toe_L,
-    Hind_Limb_Length = Hind_limb_length,
-    Forelimb_Length_Nail_to_Elbow = forelimb_L_nail_to_elbow,
-    Foot_Length = Foot_L,
-    Hand_Width = Hand_w,
-    Finger_Length = Finger_L,
-    Head_Length = Head_L,
-    Tag = tag_number,
-    Weight_Animal_Only = Weight_animal_only,
-    Weight_Bag_Animal = Weight_baganimal,
-    LOC = Location_name,
-    Ear_Length_Notch = Ear_L,
-    Tail_Length = Tail_L,
-    Body_Length = Body_L)
-head(df3_renamed)
+df2_edited <- read.csv("krat_hand_edited_2025.csv") 
+colnames(df2_edited)
+
 ```
 
-# Step 4: Merge df1 + df2
+# Find Lat/long for df1
+
+```{r}
+#dont have permission to do it, will need to ask joe!!!
+```
+
+# Fix tissue sample format df1
+
+```{r}
+#Now editing tissue samples to be formatted: "RC2025-##"
+df1$Tissue_Sample <- paste0("RC2025-", df1$Tissue_Sample)
+#Messed up now double RC2025 in 3 rows... :( will need to fix later
+#print(df1$Tissue_Sample)
+```
+
+# Step 2: rename all df for merge
+
+OBJECTID
+
+GlobalID
+
+Latitude
+
+Longitude
+
+Notes
+
+Tissue_Sample
+
+Hind_Limb_Length
+
+Foot_Width
+
+Wrist_Width
+
+Forelimb_Length
+
+Bolea_Head_Width
+
+Maxillary_Head_Width
+
+Head_Length
+
+Teeth
+
+Finger_Length
+
+Hand_Width
+
+Ear_Length
+
+Toe_Length
+
+Foot_Length
+
+Tail_Length
+
+Body_Length
+
+Reproductive_Stage
+
+Sex
+
+Life_Stage
+
+Weight_Animal_Only
+
+Weight_Bag_Animal
+
+Species
+
+Genus
+
+Tag
+
+YN_Recapture
+
+YN_Animal
+
+Location
+
+Date
+
+```{r}
+#df1 renamed for merge
+
+df1_renamed <- df1 |> rename(
+    Forelimb_Length = Forelimb_Length_Nail_to_Elbow,
+    Ear_Length = Ear_Length_Notch,
+    Location = LOC,
+    Date = DT) |> select( -EditDate, -Editor, -Teeth)
+
+#df2 renamed for merge
+df2_renamed <- df2_edited |>
+  rename(
+OBJECTID = OBJECTID,
+GlobalID = GlobalID,
+CreationDate = CreationDate,
+Notes = KRAT_Notes,
+Forelimb_Length = KRAT_Forelimb_Length_mm,
+Hind_Limb_Length = KRAT_Hind_Limb_Length,
+Foot_Width = KRAT_Foot_Width_mm,
+Wrist_Width = KRAT_Wrist_Width_mm,
+Head_Length = KRAT_Head_Length_mm,
+Finger_Length = KRAT_Finger_Length,
+Hand_Width = KRAT_Hand_Width_mm,
+Ear_Length = Ear_mm,
+Toe_Length = KRAT_Hind_Toe_Length,
+Foot_Length = Foot_mm,
+Tail_Length = Tail_mm,
+Body_Length = Body_mm,
+Reproductive_Stage = Reproductive_Stage,
+Sex = Sex,
+Life_Stage = Life_Stage,
+Weight_Animal_Only = Animal_Weight_g,
+Species = Species_Code,
+Genus = genus,
+Tag = Tag_Number,
+YN_Recapture = Recap_y_n,
+YN_Animal = Animal_y_n,
+Location = location_code,
+Date = date_time,
+Latitude = esrignss_latitude,
+Longitude = esrignss_longitude) |> 
+  #Remove irrelevant columns
+  select(-esrignss_speed, -esrignss_direction, -esrisnsr_azimuth, -esrignss_positionsourcetype, -esrignss_receiver, -esrignss_h_rms, -esrignss_v_rms, -esrignss_altitude, -esrignss_pdop, -esrignss_hdop, -esrignss_vdop, -esrignss_fixtype, -esrignss_correctionage, -esrignss_stationid, -esrignss_numsats, -esrignss_fixdatetime, -esrignss_avg_h_rms, -esrignss_avg_positions, -esrignss_h_stddev, -EditDate, -Editor, -Subspecies_Code, -Tripped_Trap_y_n, -Bait_Stolen_y_n, -KRAT_Teeth, -KRAT_Head_Width_mm, -esrignss_avg_v_rms, -all_nums, -all_labels, -num1, -num2, -lab1, -lab2, -KRAT_Foot_Length_mm)
+
+head(df2_renamed)
+
+#df3 renamed for merge
+df3_renamed <- df3 |>
+rename(OBJECTID = OBJECTID,
+       GlobalID = GlobalID,
+       CreationDate = CreationDate,
+       Notes = Notes,
+       Tissue_Sample = Tissue_Sample,
+       Hind_Limb_Length = Hind_limb_length,
+       Foot_Width =Foot_Width,
+       Wrist_Width = Wrist_Width,
+       Forelimb_Length = forelimb_L_nail_to_elbow,
+       Bolea_Head_Width = Bolea_Head_Width,
+       Maxillary_Head_Width = Maxillary_Head_Width,
+       Head_Length = Head_L,
+       Finger_Length = Finger_L,
+       Hand_Width = Hand_w,
+       Ear_Length = Ear_L,
+       Toe_Length = Toe_L,
+       Foot_Length = Foot_L,
+       Tail_Length = Tail_L,
+       Body_Length = Body_L,
+       Reproductive_Stage = Reproductive_Stage,
+       Sex = Sex,
+       Life_Stage = Life_Stage,
+       Weight_Animal_Only = Weight_animal_only,
+       Weight_Bag_Animal = Weight_baganimal,
+       Species = Species,
+       Genus = Genus,
+       Tag = tag_number,
+       YN_Recapture = YN_Recapture,
+       YN_Animal =YN_Animal,
+       Location = Location_name,
+       Date = Date_and_time,
+       Latitude = esrignss_latitude,
+       Longitude = esrignss_longitude) |>
+  #Remove ireelevent columns
+select( -esrignss_receiver, -esrignss_positionsourcetype, -esrignss_altitude, -esrignss_orthometric_height, -esrignss_h_rms, -esrignss_v_rms, -esrignss_fixdatetime, -esrignss_fixtype, -esrignss_numsats, -esrignss_correction_source_type, -esrignss_correction_source_name, -esrignss_correctionage, -esrignss_ntrip_mount_point, -esrignss_stationid, -esrignss_pdop, -esrignss_hdop, -esrignss_vdop, -esrignss_direction, -esrignss_speed, -esrisnsr_azimuth, -esrignss_antenna_height, -esrignss_receiver_gcs, -esrignss_receiver_gcs_wkid, -esrignss_receiver_ref_epoch, -esrignss_profile_has_hor_xform, -esrignss_profile_hor_xform, -esrignss_receiver_geoid, -esrignss_avg_h_rms, -esrignss_avg_v_rms, -esrignss_avg_positions, -esrignss_h_stddev, -esrignss_h_95_status, -esrignss_custom_attributes, -Teeth, -EditDate, -Editor)
+
+colnames(df3)
+```
+
+# Step 4: As numeric, all df etc
 
 ```{r}
 # Data type change to numeric
-df1_numeric <- df1 %>%
-  select(-Teeth) %>%
-  mutate(across(c(Bolea_Head_Width, Maxillary_Head_Width, Toe_Length, Hind_Limb_Length), as.numeric))
+colnames(df1_renamed)
+df1_numeric <- df1_renamed %>%
+  mutate(across(c(Bolea_Head_Width, Maxillary_Head_Width, Toe_Length, Hind_Limb_Length, Foot_Width, Wrist_Width, Head_Length, Finger_Length, Forelimb_Length, Ear_Length, Tail_Length, Body_Length, Hand_Width, Foot_Length, Tail_Length, Weight_Bag_Animal, Weight_Animal_Only), as.numeric))
+head(df1_numeric)
 
-df2_numeric <- df2_renametodf1 %>%
-  mutate(across(c(Bolea_Head_Width, Maxillary_Head_Width, Toe_Length, Hind_Limb_Length), as.numeric))
 
+df2_numeric <- df2_renamed %>%
+  mutate(across(c(Bolea_Head_Width, Maxillary_Head_Width, Toe_Length, Hind_Limb_Length, Foot_Width, Wrist_Width, Head_Length, Finger_Length, Forelimb_Length, Ear_Length, Tail_Length, Body_Length, Hand_Width, Foot_Length, Tail_Length, Weight_Animal_Only), as.numeric))
+#Make Creation date for df2 from <character> to <datetime<UTC>>
+df2_numeric2.0 <- df2_numeric |> mutate(CreationDate = ymd_hms(CreationDate)) |> mutate(Date = ymd_hms(Date))
+head(df2_numeric2.0)
 #Working on df3
-df3_numeric <- df3_renamed |>  mutate(across(c(Bolea_Head_Width, Maxillary_Head_Width, Toe_Length, Hind_Limb_Length), as.numeric))
+df3_numeric <- df3_renamed |>  mutate(across(c(Bolea_Head_Width, Maxillary_Head_Width, Toe_Length, Hind_Limb_Length, Foot_Width, Wrist_Width, Head_Length, Finger_Length, Forelimb_Length, Ear_Length, Tail_Length, Body_Length, Hand_Width, Foot_Length, Tail_Length, Weight_Animal_Only, Weight_Bag_Animal, Weight_bag_only), as.numeric))
+```
 
+# 
+
+# Step 5: Bag weight calc df3
+
+---ALSO edited bag weight to subtract for animal weight in df3
+
+```{r}
+df3_numeric <- df3_numeric |> mutate(Weight_Animal_Only = Weight_Bag_Animal - Weight_bag_only)
+print(df3_numeric$Weight_Animal_Only)
+print(df3_numeric$Weight_bag_only)
+```
+
+# Step 4.5: MERGE all df
+
+```{r}
 # Bind them together
-krat_data1 <- bind_rows(df1_numeric, df2_numeric)
+krat_data1 <- bind_rows(df1_numeric, df2_numeric2.0)
 head(krat_data1)
 krat_data2 <- bind_rows(krat_data1, df3_numeric)
-write_csv(krat_data2, "krat_data_2.1_2026.csv")
 ```
 
 # Step 5: species assignment & type conversion
@@ -144,15 +302,63 @@ write_csv(krat_data2, "krat_data_2.1_2026.csv")
 final_krat_data <- krat_data2 %>%
   # 1. Assign Species name based on Location (LOC) column
   mutate(Species = case_when(
-    LOC == "Hastings" ~ "Dipodomys venustus",
-    LOC == "FONR"     ~ "Dipodomys heermanni", 
+    Location == "Hastings" ~ "Dipodomys venustus",
+    Location == "FONR"     ~ "Dipodomys heermanni", 
     TRUE ~ Species
   )) %>%
   # 2. Ensure all measurement columns are numeric to prevent plotting errors
   mutate(across(c(contains("Length"), contains("Width"), contains("Weight")), as.numeric))
 
+
+
+
+```
+
+# Step 6: Iron out fine details
+
+```{r}
+#Combine both notes columns into one using unite() --- BADDD dont use
+#final_krat_data$Notes <- unite(final_krat_data,Notes, NOTES, sep = " ")
+final_krat_data$notes <- paste(final_krat_data$Notes, final_krat_data$NOTES)
+#Checking that this worked!!! CHECK.
+#print(final_krat_data$notes)
+#print(final_krat_data$Notes)
+#print(final_krat_data$NOTES)
+
+#Get rid of unused Notes and NOTES columns and bag weight column
+final_krat_data <- final_krat_data |> select( -NOTES, -Notes, -Weight_bag_only, -YN_Animal)
+
+#Now editing tissue samples to be formatted: "RC2025-##"
+#final_krat_data$Tissue_Sample <- paste0("RC2025-", final_krat_data$Tissue_Sample)
+#Messed up now double RC2025 in some rows... :(
+#print(final_krat_data$Tissue_Sample)
+#Fix in excel???? -- dont know if this code is necessary
+#print(df1)
+```
+
+# Step 7: Fix NAs in data
+
+For columns:
+
+Lifestage – if NA assume Adult
+
+Reproductive stage – if NA assume non-repro
+
+```{r}
+#final_krat_data <- final_krat_data %>%
+  # 1. Assign default stages for data with NAs
+  #mutate(Reproductive_Stage = case_when(
+   # Reproductive_Stage == "NA" ~ "Non-Reproductive",
+   # TRUE ~ Reproductive_Stage
+ # ))
+#print(final_krat_data$Reproductive_Stage)
+#dont work :(
+```
+
+# Step: Export csv
+
+```{r}
 # install.packages("readr")
 library(readr)
-write_csv(final_krat_data, "final_krat_data_2026.csv")
-
+write_csv(final_krat_data, "Clean...kratdata7_31_2026.csv")
 ```
