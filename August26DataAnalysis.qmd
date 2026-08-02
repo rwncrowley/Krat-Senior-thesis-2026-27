@@ -1,0 +1,77 @@
+---
+title: "Data analysis"
+format: html
+editor: visual
+---
+
+## Set up
+
+```{r}
+library(ggplot2)
+library(brms)
+library(ggeffects)
+library(tidyverse)
+library(readxl)
+library(here)
+library(dplyr)
+library(ggtext)
+
+#Load in clean data set
+df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
+```
+
+## Finding tissue sample counts for each species
+
+```{r}
+#25 total tissue samples taken
+unique(df$Tissue_Sample) 
+```
+
+Heermanni: 18 tissue samples
+
+Venustus: 7 tissue samples
+
+```{r}
+
+#Filter for the krats we took tissue from
+df_tissues <- df |> filter(!is.na(Tissue_Sample))
+#print(df_tissues$Tissue_Sample)
+head(df_tissues)
+
+#First for heermanni: 18 tissue samples
+df_he <- df_tissues |> filter(Species== "Dipodomys heermanni")
+unique(df_he$Tissue_Sample)
+
+#Next for venustus: 7 tissue samples
+df_ve <- df_tissues |> filter(Species== "Dipodomys venustus")
+unique(df_ve$Tissue_Sample)
+```
+
+## Finding data on Tag #948,#123, #119, #992
+
+```{r}
+#Tag 948 is a female, adult
+df |> filter(Tag=="948")
+#Tag 123... no sex data available :( --- maybe can look through photos... no photos of sex 
+df |> filter(Tag=="123")
+#Tag 119... no sex data need to look up photos... maybe a male, photo showed a break in the hair in the genital region that makes me think it could have been a male
+df |> filter(Tag == "119")
+#Tag 992... no sex data need to look up photos.... NO DATA :C
+df |> filter(Tag == "992")
+#Find tag number 12-? from 07.12.2025 sample RC2025-10 and maybe look at phots
+
+#ObjectIDs to look up in df2 dataset: 176,162, 136, 100(no photos of tag)
+```
+
+## Set all to adult if not specified (did this in excel)
+
+# Export CSV
+
+```{r}
+#Take out new measurements... not ready to share with the world
+df_tissues <- df_tissues |> select(-Hind_Limb_Length, -Foot_Width, -Wrist_Width, -Forelimb_Length, -Bolea_Head_Width, -Maxillary_Head_Width, -Finger_Length, -Hand_Width, -Toe_Length)
+head(df_tissues)
+
+#export the csv
+write_csv(df_tissues, "RC2026_KRAT_TISSUES.csv") 
+```

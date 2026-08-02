@@ -29,7 +29,9 @@ df1<- read_excel("7_31oldkratdata_2026.xls")
 
 ```
 
-# Step 1: Filter Dipodomys df2
+# Step 1: Fix df2, oldest data 2025
+
+### Filter Dipodomys df2
 
 ```{r}
 df2_Difiltered <- df2 %>%
@@ -38,7 +40,7 @@ df2_Difiltered <- df2 %>%
 
 ```
 
-# Step 1.5: Extract Head widths df2
+### Extract Head widths df2
 
 ```{r}
 #Distinguish pm + b
@@ -73,7 +75,7 @@ print(df2_head_mb_cleaned)
 #Extract forelimb length???? from notes
 ```
 
-# Step 1.7: Fix Notes in df2 (oldest data set 2025)
+### Distribute notes data into their own column df2
 
 #move tissue sample values, forelimb length values, KRAT_Foot_Length values to foot length, bolea, maxillary, tissue samples from notes, weight calculations done, location name corrected, etc
 
@@ -86,13 +88,17 @@ colnames(df2_edited)
 
 ```
 
-# Find Lat/long for df1
+# Step 2: Fix df1, old app 2026, no more data to be added
+
+### Find lat/long for df1
+
+Tried trouble shooting on arcgis pro but unfortunately I do not have the permission to do this on my GIS account. I will need to ask Joe to get a csv that includes the lat/long of the GIS online app titled "Mammal_Observation_Database_Fort_Ord_Natural_Reserve" which is not currently included in the attribute table, yet we have the points on the maps... weirddd
 
 ```{r}
 #dont have permission to do it, will need to ask joe!!!
 ```
 
-# Fix tissue sample format df1
+### Fix tissue sample format df1
 
 ```{r}
 #Now editing tissue samples to be formatted: "RC2025-##"
@@ -101,7 +107,9 @@ df1$Tissue_Sample <- paste0("RC2025-", df1$Tissue_Sample)
 #print(df1$Tissue_Sample)
 ```
 
-# Step 2: rename all df for merge
+# Step 3: rename all df for merge
+
+### Standard names are:
 
 OBJECTID
 
@@ -277,7 +285,7 @@ df3_numeric <- df3_renamed |>  mutate(across(c(Bolea_Head_Width, Maxillary_Head_
 
 # 
 
-# Step 5: Bag weight calc df3
+# Step 4.5: Bag weight calc df3
 
 ---ALSO edited bag weight to subtract for animal weight in df3
 
@@ -287,7 +295,7 @@ print(df3_numeric$Weight_Animal_Only)
 print(df3_numeric$Weight_bag_only)
 ```
 
-# Step 4.5: MERGE all df
+# Step 5: MERGE all df
 
 ```{r}
 # Bind them together
@@ -296,7 +304,7 @@ head(krat_data1)
 krat_data2 <- bind_rows(krat_data1, df3_numeric)
 ```
 
-# Step 5: species assignment & type conversion
+# Step 6: species assignment & type conversion
 
 ```{r}
 final_krat_data <- krat_data2 %>%
@@ -314,7 +322,9 @@ final_krat_data <- krat_data2 %>%
 
 ```
 
-# Step 6: Iron out fine details
+# Step 7: Iron out fine details
+
+### Merge notes columns together, get rid of unimportant columns
 
 ```{r}
 #Combine both notes columns into one using unite() --- BADDD dont use
@@ -336,7 +346,7 @@ final_krat_data <- final_krat_data |> select( -NOTES, -Notes, -Weight_bag_only, 
 #print(df1)
 ```
 
-# Step 7: Fix NAs in data
+# Step 8: Fix NAs in data??? (INCOMPLETE)
 
 For columns:
 
@@ -355,15 +365,26 @@ Reproductive stage – if NA assume non-repro
 #dont work :(
 ```
 
-# Step: Export csv
+# Step 9: Export csv... ALL CLEAN :)
 
 ```{r}
 # install.packages("readr")
 library(readr)
 write_csv(final_krat_data, "Clean...kratdata7_31_2026.csv")
+#Manually fix tissue samples in excel
+FINALdf <- read.csv("Clean...kratdata7_31_2026.CSV")
+unique(FINALdf$Tissue_Sample)
+#Delete columns: creator
+#rename Creation date to Collection Date, notes to Notes
+FINALdf <- FINALdf |> select( -Creator) |> rename( Collection_Date = CreationDate,
+Notes = notes)
+#show edited df.... ITS GORGEOUS!!!
+head(FINALdf)
+write_csv(FINALdf, "RC2026_KRAT_DATA.08.01.csv")
+#only thing we would need to do is recover the latitude n longitude to make it complete
 ```
 
-# Getting body measurements for dominique
+# SIDEWORK: Getting body measurements for dominique
 
 ```{r}
 dominiquekratdata <- final_krat_data |> select (Body_Length)
