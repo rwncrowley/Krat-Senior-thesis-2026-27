@@ -4,6 +4,8 @@ format: html
 editor: visual
 ---
 
+This document is creating a CSV of all kangaroo rats who had tissue samples taken
+
 ## Set up
 
 ```{r}

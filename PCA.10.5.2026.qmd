@@ -1,0 +1,39 @@
+---
+title: "PCA.10.5.2026"
+format: html
+editor: visual
+---
+
+# Info:
+
+I am doing a principle component analysis on the data of Fort Ord and Hastings kangaroo rats for all of my variables. I will be using code from "Introduction to Ordination (PCA) in R" by Brad Duthie and also code from Dr. Rob Burton a CSUMB professor.
+
+I have chosen a PCA over other kinds of ordination because:
+
+-   maximizes total variation across all variables in analysis
+
+-   is blind to groups and would help to hypothesis test for species ID without introducing bias by including grouping by species into analysis
+
+-   Works well with small sample sizes, our is about 100 or less which is relatively small
+
+-   Can help discover unknown data clusters
+
+-   Can create explanations of variation
+
+## Set up
+
+```{r}
+library(ggplot2)
+library(brms)
+library(ggeffects)
+library(tidyverse)
+library(readxl)
+library(here)
+library(dplyr)
+library(ggtext)
+
+#Load in clean data set
+df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
+```
+
+## Running Code
