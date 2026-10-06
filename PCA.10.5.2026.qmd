@@ -34,6 +34,49 @@ library(ggtext)
 
 #Load in clean data set
 df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
+head(df)
 ```
 
-## Running Code
+## Set up Matrix
+
+```{r}
+#Show column names
+colnames(df)
+
+#Remove non-continuous, non-quantitative variable columns
+df <- df |> select(-OBJECTID, -GlobalID, -Collection_Date, -Tissue_Sample, -Sex, -Reproductive_Stage, -Life_Stage, -Species, -Weight_Bag_Animal, -Genus, -Tag, -YN_Recapture, -Location, -Date, -Latitude, -Longitude, -Notes)
+#Check that everything is right
+colnames(df)
+#turn it into a matrix for the PCA
+df <- as.matrix(df)
+#This matrix exists in 15 dimensional space
+head(df)
+```
+
+# Visualize data
+
+```{r}
+#show data in pairs
+pairs(x = df, gap = 0, cex.labels = 0.5)
+#SCARYYYYYY
+```
+
+```{r}
+#Scale data so that all data has a mean of 0 and SD of 1
+df <- scale(df)
+head(df)
+#try to make the pca
+pca_df <- prcomp(df)
+
+
+```
+
+It does not work because I have too many NAs in the dataset, if I omit them I would lose too much data
+
+My options are:
+
+-   fill in missing value NAs with a mean or median
+
+-   regularized iterative PCA
+
+-   NIPALS – Non-linear Iterative Partial Least Squares
