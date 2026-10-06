@@ -78,7 +78,11 @@ Looking at the data after filtering out the observations where we likely do not 
 
 Consider not including measurements that have too many NAs??? such as bolea head width and foot width
 
-For others such as foot length we could consider inputting the mean/median?
+For others such as foot length and ones with only 1 missing data piece we could consider inputting the mean/median?
+
+For animal weight consider doing an estimate of bag weight if bag + animal value exists
+
+Forelimb length has about 7 values missing. – what to do?
 
 ## Set up Matrix
 
