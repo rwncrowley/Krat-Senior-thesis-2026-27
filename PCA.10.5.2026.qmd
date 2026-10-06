@@ -37,6 +37,49 @@ df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
 head(df)
 ```
 
+# Remove NAs set up
+
+```{r}
+#Filter out observations where they were recaps or had no data... Use most common measurement, if measurements were taken, body length should have data to filter
+df_na <- df |> filter(Body_Length != "NA")
+#Show us how many different animals we have left: 67 individuals
+print(df_na$Tag)
+#Look at data.. how many observations still have NAs???
+#print(df_na) 
+
+#Remove non-continuous, non-quantitative variable columns
+df_na <- df_na |> select(-OBJECTID, -GlobalID, -Collection_Date, -Tissue_Sample, -Sex, -Reproductive_Stage, -Life_Stage, -Species, -Weight_Bag_Animal, -Genus, -Tag, -YN_Recapture, -Location, -Date, -Latitude, -Longitude, -Notes)
+
+#Find NA count
+colSums(is.na(df_na))
+
+#Find rows with highest number of NAs to get rid of
+rowSums(is.na(df_na))
+#Rows number 12, 23, 40, 43, 48 have A LOT of Nas between 10-13
+#Rows number 24, 25,26,27,28 have around 5-6 NAs
+# a lot are only missing 2-3 values -- which are bolea and foot width consider deleting these columns
+
+#remove rows rows with most NAs
+df_na1 <- df_na[-c(12, 23, 40, 43, 48, 24, 25, 26, 27, 28), ]
+df_na1 <- df_na1 |> select(-Bolea_Head_Width, -Foot_Width)
+#Check how many NAs we still have
+colSums(is.na(df_na1))
+rowSums(is.na(df_na1))
+#This way we have way less NAs
+#Only columns to look into now are animal weight and forelimb length for having missing data
+#print(df_na1)
+
+#all NAs omitted leaves us with only 25 observations :C
+df_na_omit <- na.omit(df_na)
+#print(df_na_omit)
+```
+
+Looking at the data after filtering out the observations where we likely do not have any measurements, we can see we still have a significant amount of data with a lot of NAs...
+
+Consider not including measurements that have too many NAs??? such as bolea head width and foot width
+
+For others such as foot length we could consider inputting the mean/median?
+
 ## Set up Matrix
 
 ```{r}
