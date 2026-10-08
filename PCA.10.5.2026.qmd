@@ -37,6 +37,11 @@ df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
 head(df)
 ```
 
+```{r}
+df_omit1 <- na.omit(df.test)
+print(df_omit1)
+```
+
 # Sort out NAs try 1
 
 ```{r}
@@ -58,19 +63,24 @@ rowSums(is.na(df))
 print(df)
 
 #Some Weight_animal_only have Weight_bag_animal values which can be estimates to find the weight or subtracted the average of bag weight (Usually between 10 and 20 based on how many seeds) -- if we do that there are only 3/8 truly missing values
-
+df.test <- df
 df.test$Na_Animal_Weight <- df$Weight_Bag_Animal-15
 head(df.test)
 df.test$Weight_Animal_Only[is.na(df.test$Weight_Animal_Only)] <- df.test$Na_Animal_Weight[is.na(df$Weight_Animal_Only)]
 #It worked!!! now only 3 missing weight values
 colSums(is.na(df.test))
 #Get rid of unwanted columns
-df.test <- df.test |> select(-Weight_Bag_Animal,-Na_Animal_Weight)
-
 #Will get rid of Weight_Bag_animal once animal  only values are cleaned up
+df.test <- df.test |> select(-Weight_Bag_Animal,-Na_Animal_Weight)
+print(df.test)
+
 
 #Potentially get rid of Bolea_head_width and Foot_width from PCA analysis, they have 18 and 17 missing values
+df.test <- df.test |> select(-Bolea_Head_Width, -Foot_Width)
+#Leaves 41 NAs but 60 observations and 13 variables --- only 5.2% of values missing for analysis
+colSums(is.na(df.test))
 
+print(df.test)
 ```
 
 # Remove NAs set up
@@ -140,7 +150,7 @@ head(df)
 # Visualize data
 
 ```{r}
-#show data in pairs
+#show data in pairs -- df_omit1
 pairs(x = df, gap = 0, cex.labels = 0.5)
 #SCARYYYYYY
 ```
