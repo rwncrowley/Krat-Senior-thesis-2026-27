@@ -37,6 +37,42 @@ df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
 head(df)
 ```
 
+# Sort out NAs try 1
+
+```{r}
+
+#Remove non-continuous, non-quantitative variable columns
+df <- df |> select(-OBJECTID, -GlobalID, -Collection_Date, -Tissue_Sample, -Sex, -Reproductive_Stage, -Life_Stage, -Species, -Genus, -Tag, -YN_Recapture, -Location, -Date, -Latitude, -Longitude, -Notes)
+
+#Show NA values in full clean data set
+print(df)
+#Show NAs in columns and rows
+colSums(is.na(df))
+rowSums(is.na(df))
+
+#Remove rows with the most NAs
+df <- df[-c(6, 10, 11, 12,13, 14,15, 16, 19, 20, 21, 22, 23, 24, 25, 34, 36, 37, 38, 39, 51, 57, 60, 61, 66, 69, 70, 76, 78, 79, 80, 86, 90, 91, 92, 93, 95, 96), ]
+colSums(is.na(df))
+rowSums(is.na(df))
+#This cleaning leaves 60 observations
+print(df)
+
+#Some Weight_animal_only have Weight_bag_animal values which can be estimates to find the weight or subtracted the average of bag weight (Usually between 10 and 20 based on how many seeds) -- if we do that there are only 3/8 truly missing values
+
+df.test$Na_Animal_Weight <- df$Weight_Bag_Animal-15
+head(df.test)
+df.test$Weight_Animal_Only[is.na(df.test$Weight_Animal_Only)] <- df.test$Na_Animal_Weight[is.na(df$Weight_Animal_Only)]
+#It worked!!! now only 3 missing weight values
+colSums(is.na(df.test))
+#Get rid of unwanted columns
+df.test <- df.test |> select(-Weight_Bag_Animal,-Na_Animal_Weight)
+
+#Will get rid of Weight_Bag_animal once animal  only values are cleaned up
+
+#Potentially get rid of Bolea_head_width and Foot_width from PCA analysis, they have 18 and 17 missing values
+
+```
+
 # Remove NAs set up
 
 ```{r}
@@ -50,7 +86,7 @@ print(df_na$Tag)
 #Remove non-continuous, non-quantitative variable columns
 df_na <- df_na |> select(-OBJECTID, -GlobalID, -Collection_Date, -Tissue_Sample, -Sex, -Reproductive_Stage, -Life_Stage, -Species, -Weight_Bag_Animal, -Genus, -Tag, -YN_Recapture, -Location, -Date, -Latitude, -Longitude, -Notes)
 
-#Find NA count
+#Find NA count: 139 total out of
 colSums(is.na(df_na))
 
 #Find rows with highest number of NAs to get rid of
@@ -62,16 +98,17 @@ rowSums(is.na(df_na))
 #remove rows rows with most NAs
 df_na1 <- df_na[-c(12, 23, 40, 43, 48, 24, 25, 26, 27, 28), ]
 df_na1 <- df_na1 |> select(-Bolea_Head_Width, -Foot_Width)
-#Check how many NAs we still have
+#Check how many NAs we still have, 25 in total over 57*13 rows*columns
+#Thats 3.37 % of values are missing -- shouldnt be too bad???
 colSums(is.na(df_na1))
 rowSums(is.na(df_na1))
 #This way we have way less NAs
 #Only columns to look into now are animal weight and forelimb length for having missing data
-#print(df_na1)
+print(df_na1)
 
 #all NAs omitted leaves us with only 25 observations :C
 df_na_omit <- na.omit(df_na)
-#print(df_na_omit)
+print(df_na_omit)
 ```
 
 Looking at the data after filtering out the observations where we likely do not have any measurements, we can see we still have a significant amount of data with a lot of NAs...
