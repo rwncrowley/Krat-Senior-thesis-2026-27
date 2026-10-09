@@ -1,0 +1,54 @@
+---
+title: "10.08.2026KratGraphGen"
+format: html
+editor: visual
+---
+
+## Set up
+
+```{r}
+library(ggplot2)
+library(brms)
+library(ggeffects)
+library(tidyverse)
+library(readxl)
+library(here)
+library(dplyr)
+library(ggtext)
+
+#Load in clean data set
+df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
+head(df)
+```
+
+# Goal:
+
+Graph each continuous quantitative variable versus head length. Decide which variables are redundant and do not change much with species. These can be removed from the PCA later.
+
+#### Why head length and not body length as a size proxy?
+
+Head length is being used due to its value as a general size indicator and also because it is a less coarse measurement than body length. When measuring small mammals a different scruff can change the body length and it is really a general estimate. The head length was taken with a caliper and is highly precise.
+
+## Assess head length for any outliers
+
+```{r}
+#In this plot we can see a head_length value of about 36 which seems to be an outlier
+df %>%
+  ggplot(aes(y= Head_Length, x= Body_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+#Plotting versus tail length, we can see it is an outlier here as well
+df %>%
+  ggplot(aes(y= Head_Length, x= Tail_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Remove head length outlier
+
+```{r}
+df$Head_Length[df$Head_Length < 37] <- NA
+print(df$Head_Length)
+
+write_csv(df, "10.8.2026KratCleanDataRMC.csv")
+```

@@ -14,11 +14,11 @@ I have chosen a PCA over other kinds of ordination because:
 
 -   is blind to groups and would help to hypothesis test for species ID without introducing bias by including grouping by species into analysis
 
--   Works well with small sample sizes, our is about 100 or less which is relatively small
+-   Works well with small sample sizes, our is about 60 or less which is relatively small
 
 -   Can help discover unknown data clusters
 
--   Can create explanations of variation
+-   Can explain total variation owed to each variable or "principle component"
 
 ## Set up
 
@@ -174,3 +174,5 @@ My options are:
 -   regularized iterative PCA
 
 -   NIPALS – Non-linear Iterative Partial Least Squares
+
+-   Reassess which variables to use and use however many complete observations are available
