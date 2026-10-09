@@ -1,6 +1,6 @@
 ---
 title: "10.8.2026Kratfrequencydistributions"
-format: html
+format: pdf
 editor: visual
 ---
 
@@ -17,9 +17,8 @@ library(dplyr)
 library(ggtext)
 
 #Load in clean data set
-df.hlo <- read.csv("10.8.2026KratCleanDataRMC.csv") #w/o head length outlier 36 mm
-head(df)
-
+df.hlo <- read.csv("10.8.2026KratCleanDataRMC.csv") #w/o head length outlier 36 m
+#Load in clean data set with all values
 df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
 ```
 
@@ -31,17 +30,21 @@ Create frequency distributions for each species over the different seasons of th
 
 ## Our data demographics
 
+36 heermanni, 24 venustus
+
 ```{r}
-#Remove rows with the most NAs or where most data was not taken
+#Remove rows with the most NAs in continuous, quantitative variables or where most measurement data was not taken
 df <- df[-c(6, 10, 11, 12,13, 14,15, 16, 19, 20, 21, 22, 23, 24, 25, 34, 36, 37, 38, 39, 51, 57, 60, 61, 66, 69, 70, 76, 78, 79, 80, 86, 90, 91, 92, 93, 95, 96), ]
 
 #Show number of each species included in analysis: 36 heermanni, 24 venustus
 table(df$Species)
 ```
 
-## General size frequency distributions
+## General size frequency distributions for Head Length
 
 #### With all data points
+
+Option here between a histogram and a density distribution. I like the density one better for looks, but probably tells you less if you don't know about the data for counts and the actual frequency.
 
 ```{r}
 #Create a histogram of the head length, separating by species
@@ -58,12 +61,12 @@ geom_density()
 #### Without head length outlier (\< 37 mm)
 
 ```{r}
-#Create a histogram of the head length, separating by species
+#Create a histogram of the head length, separating by species without the outlier
 df.hlo %>%
   ggplot(aes(x= Head_Length, fill =  Species))+
 geom_histogram(bins = 20, color = "black")
 
-#Create a density, smooth line frequency distribution, separating by species
+#Create a density, smooth line frequency distribution, separating by species without the outlier
 df.hlo %>%
   ggplot(aes(x= Head_Length, color =  Species))+
 geom_density()
@@ -74,6 +77,8 @@ Tail is left out of the trait distribution when the head length value \<37 mm is
 #### Spring data showing the outlier
 
 The more data collected over the summer filled in the gaps of the distribution that had been missing in this spring data analysis. This head length value \< 37 may not be an outlier after all??
+
+Observation demographics of old data: 27 heermanni, 14 venustus
 
 ```{r}
 #Read in old data from the Spring, May 2026
@@ -91,9 +96,158 @@ df.old %>%
 geom_density()
 ```
 
+Interpretation: The outlier (\< 37mm) in head length absolutely looks like one based on the old data with the lower sample size, but when more data was added the distribution became more normal.
+
+## General size frequency distribution for Body Length
+
+#### With all data points
+
+This graph has the frequency distribution for body length of both species, showing they are not very different in body length, but in the past graphs the head length has differed a lot more. Maybe body length is a better indicator of general size despite it being more coarse??
+
+```{r}
+#Create a density, smooth line frequency distribution, separating by species
+df %>%
+  ggplot(aes(x= Body_Length, color =  Species))+
+geom_density()
+```
+
 # Size over the seasons
+
+Observations of both species per season:
+
+Fall: 23, Spring: 3, Summer 33, Winter 1
+
+### Both species across the seasons
 
 ```{r}
 #make a new column for season
+df$Season <- NA
+head(df$Season) # it worked!
 #sort observations by date -- choose what counts as each season
+head(df$Date)
+
+# Extract month and assign season
+df <- df %>%
+  mutate(
+    Month = month(Date),
+    Season = case_when(
+      Month %in% c(12, 1, 2) ~ "Winter",
+      Month %in% c(3, 4, 5)  ~ "Spring",
+      Month %in% c(6, 7, 8)  ~ "Summer",
+      Month %in% c(9, 10, 11) ~ "Fall"
+    )
+  )
+head(df$Season) # check that it worked
+table(df$Season) #Fall 23, Spring 3, Summer 33, Winter 1
+
+#graph with color = season, of all kangaroo rats both species
+#Create a density, smooth line frequency distribution, separating by season and including both species taking into account the frequency of body length values
+df %>%
+  ggplot(aes(x= Body_Length, color =Season))+
+geom_density()
 ```
+
+### Heermanni across the seasons
+
+For just heermanni observations per season:
+
+Fall: 14
+
+Summer: 22
+
+Winter: 0
+
+Spring: 0
+
+```{r}
+#Filter for only D. heermanni
+head(df$Species)
+dfhe <- df |> filter(Species == "Dipodomys heermanni")
+
+#Demographics 14 fall, 22 summer
+table(dfhe$Season)
+
+#Create a density, smooth line frequency distribution, separating by season
+dfhe %>%
+  ggplot(aes(x= Body_Length, color =Season))+
+geom_density()
+```
+
+This seasonal graph of the heermanni is super interesting and might have enough of a sample size to be able to say something?!
+
+### Venustus over the seasons
+
+For just venustus observations per season:
+
+Fall: 9
+
+Spring: 3
+
+Summer: 11
+
+Winter: 1
+
+```{r}
+#Filter for only D. heermanni
+head(df$Species)
+dfve <- df |> filter(Species == "Dipodomys venustus")
+
+#Demographics 14 fall, 22 summer
+table(dfve$Season)
+
+#Create a density, smooth line frequency distribution, separating by season
+dfve %>%
+  ggplot(aes(x= Body_Length, color =Season))+
+geom_density()
+```
+
+This graph here is not based on enough data to mean much, but we don't see the same split in size over the seasons as with the heermanni. This could be due mostly to the low sample size.
+
+# Seasonal sexual dimorphism?
+
+### Dipodomys heermanni
+
+Observed 28 Female and 5 Male heermanni.
+
+Females seem to be more abundant then males in both species or maybe they are out foraging more often due to greater metabolic needs (Lactating, pregnant, etc) and therefore get caught in the traps more often??
+
+```{r}
+#Create a density, smooth line frequency distribution, of just the heermanni separating by sex and looking at body length frequency
+dfhe %>%
+  ggplot(aes(x= Body_Length, color =Sex))+
+geom_density()
+
+#Sexual demographics
+table(dfhe$Sex)
+```
+
+This map probably doesn't mean much due to the low sample size of males.
+
+```{r}
+#Create a bar plot, separating by season and sex
+dfhe %>%
+  ggplot(aes(x= Sex, fill=Season))+
+geom_bar()
+```
+
+There's way more females than males, I'm not sure we can say much from this.
+
+### Dipodomys venustus
+
+Of the venustus observations:
+
+F: 19, M: 1, Unknown: 1
+
+Graph doesn't even work :C
+
+```{r}
+#Create a density, smooth line frequency distribution, separating by sex of the venustus and looking at body length value frequency
+dfve %>%
+  ggplot(aes(x= Body_Length, color =Sex))+
+geom_density()
+
+#Sexual demographics
+table(dfve$Sex)
+```
+
+Graph doesn't even work :C
