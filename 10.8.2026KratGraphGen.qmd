@@ -1,5 +1,5 @@
 ---
-title: "10.08.2026KratGraphGen"
+title: "10.08.2026: Kangaroo rat Measurement outliers and graphs"
 format: html
 editor: visual
 ---
@@ -23,21 +23,17 @@ head(df)
 
 # Goal:
 
-Graph each continuous quantitative variable versus head length. Decide which variables are redundant and do not change much with species. These can be removed from the PCA later.
+Graph each continuous quantitative variable versus head length. Get rid of outliers. Decide which variables are redundant and do not change much with species. These can be removed from the PCA later.
 
-#### Why head length and not body length as a size proxy?
-
-Head length is being used due to its value as a general size indicator and also because it is a less coarse measurement than body length. When measuring small mammals a different scruff can change the body length and it is really a general estimate. The head length was taken with a caliper and is highly precise.
-
-## Assess head length for any outliers
+## 1. Assess head length for any outliers
 
 ```{r}
-#In this plot we can see a head_length value of about 36 which seems to be an outlier
+#In this plot we can see a head_length value of about 36 which could be an outlier??
 df %>%
   ggplot(aes(y= Head_Length, x= Body_Length, color =  Species))+
   geom_point()+
   geom_smooth(method = "lm")
-#Plotting versus tail length, we can see it is an outlier here as well
+#Plotting versus tail length, we can see it is far out here as well
 df %>%
   ggplot(aes(y= Head_Length, x= Tail_Length, color =  Species))+
   geom_point()+
@@ -47,8 +43,235 @@ df %>%
 ### Remove head length outlier
 
 ```{r}
-df$Head_Length[df$Head_Length < 37] <- NA
-print(df$Head_Length)
+#Create new copy data frame
+df1 <- df
+#Remove possible outlier
+df1$Head_Length[df$Head_Length < 37] <- NA
 
-write_csv(df, "10.8.2026KratCleanDataRMC.csv")
+#Write new csv with the new change
+#write_csv(df1, "10.8.2026KratCleanDataRMC.csv")
+
+#Load in clean data set without head length outlier (hlo)
+df.hlo <- read.csv("10.8.2026KratCleanDataRMC.csv") #w/o head length outlier 36 m
 ```
+
+# 2. Head length outlier may not be an outlier
+
+## Our data demographics
+
+### All up to date, data points from Summer 2026
+
+36 heermanni, 24 venustus
+
+```{r}
+#Remove rows with the most NAs in continuous, quantitative variables or where most measurement data was not taken (Mostly recaps)
+df <- df[-c(6, 10, 11, 12,13, 14,15, 16, 19, 20, 21, 22, 23, 24, 25, 34, 36, 37, 38, 39, 51, 57, 60, 61, 66, 69, 70, 76, 78, 79, 80, 86, 90, 91, 92, 93, 95, 96), ]  #Show number of each species included in analysis: 36 heermanni, 24 venustus 
+table(df$Species)
+```
+
+## General size frequency distributions for Head Length
+
+#### With all data points
+
+Option here between a histogram and a density distribution. I like the density one better for looks, but probably tells you less if you don't know about the data for sample size, species counts and the actual amount the density assesses.
+
+```{r}
+#Create a histogram of the head length, separating by species 
+df %>%   ggplot(aes(x= Head_Length, fill =  Species))+ geom_histogram(bins = 20, color = "black")  
+#Create a density, smooth line frequency distribution, separating by species 
+df %>%   ggplot(aes(x= Head_Length, color =  Species))+ geom_density()
+```
+
+#### Without head length outlier (\< 37 mm)
+
+```{r}
+#Create a histogram of the head length, separating by species without the outlier
+df.hlo %>%   ggplot(aes(x= Head_Length, fill =  Species))+ geom_histogram(bins = 20, color = "black")  #Create a density, smooth line frequency distribution, separating by species without the outlier
+df.hlo %>%   ggplot(aes(x= Head_Length, color =  Species))+ geom_density()
+```
+
+Tail is left out of the trait distribution when the head length value \<37 mm is not included. Does this mean its actually an outlier?
+
+#### Old spring data showing the outlier (what we looked at in meeting 10/8/26)
+
+The more data collected over the summer filled in the gaps of the distribution that had been missing in this spring data analysis. This head length value \<37 mm may not be an outlier after all??
+
+Observation demographics of old data: 27 heermanni, 14 venustus
+
+```{r}
+#Read in old data from the Spring, May 2026
+df.old <- read.csv("final_krat_data_2026.csv")
+
+#Remove rows where most data was not taken (recaps mostly)
+df.old <- df.old[-c(6, 10, 11, 12,13, 14,15, 16, 19, 20, 21, 22, 23, 24, 25, 34, 36, 37, 38, 39, 51, 57, 60, 61, 66), ]
+
+#Have 27 heermanni, 14 venustus in this analysis from the spring before summer data was taken + included
+table(df.old$Species)
+
+#Create a density, smooth line frequency distribution, separating by species
+df.old %>%
+  ggplot(aes(x= Head_Length, color =  Species))+
+geom_density()
+```
+
+This might be explained by more juveniles being trapped in the early summer. If you look at the seasonal frequency distributions (in other analysis) this shows some pretty good evidence of size differences by seasons in Dipodomys heermanni.
+
+# 3. Why head length as a size proxy?
+
+#### Why head length and not body length as a size proxy?
+
+Head length is being used due to its value as a general size indicator and also because it is a less coarse measurement than body length. When measuring small mammals a different scruff can change the body length and it is really a general estimate. The head length was taken with a caliper and is highly precise.
+
+Additionally, we will see this later in data, body length is almost entirely overlapping between D. heermanni and D. venustus from our sample meaning body length would not help to differentiate species in a PCA analysis and head length would be a better size proxy to help find separation between the two.
+
+### Explore body length vs. head length as a measure of general size
+
+#### Frequency distributions of Head length
+
+```{r}
+#Create a density, smooth line frequency distribution, separating by species
+df %>%
+  ggplot(aes(x= Head_Length, color =  Species))+
+geom_density()
+```
+
+#### Frequency distributions of body length
+
+```{r}
+#Create a density, smooth line frequency distribution of body length, separating by species 
+df %>%
+  ggplot(aes(x= Body_Length, color =  Species))+
+geom_density()
+```
+
+#### Interpretation:
+
+Body length seems to be very similar and nearly entirely overlapping on both species, but head length is different, but overlapping. This could mean that the ratio of head to body length is different on these animals.
+
+#### Ratio of body length to head length versus body length
+
+```{r}
+#Show data of smooth linear regression plot
+df |>
+  ggplot(aes(y= log(Body_Length/Head_Length), x= log(Body_Length), color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+#Show body length to head length ratio in a density frequency distribution plot
+df %>%
+  ggplot(aes(x= (Body_Length/Head_Length), color =  Species))+
+geom_density()
+```
+
+They don't seem to be too different and the body length to head length ratio would not help us to identify between these species very accurately. The head length on its own is more helpful than including body length. Consider excluding body length from PCA?
+
+# 4. Graph each measurement versus head length
+
+Only quantitative, continuous measurements will be graphed for outliers
+
+```{r}
+#Here are all of the variables measured
+colnames(df)
+```
+
+Quantitative, continuous measurements to try:
+
+#### 1) Body length
+
+I'm trying logged versus normal and it doesn't seem to make a noticeable difference in the graphs. It only seems to get rid of real biological references like the millimeter units from the graph making it harder to understand.
+
+```{r}
+#Body length vs head length as logged
+df %>%
+  ggplot(aes(y= log(Body_Length), x= log(Head_Length), color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+#body length vs head length, not logged
+df %>%
+  ggplot(aes(y= Body_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### 2) Tail length
+
+```{r}
+#Tail length vs head length graph
+df %>%
+  ggplot(aes(y= Tail_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+#Tail length vs head length
+df %>%
+  ggplot(aes(y= Tail_Length, x= Body_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+#### Outliers:
+
+There seem to be 2 outliers in the D. venustus with tail lengths \< 200 mm. When trapping its very possible that those kangaroo rats had the tip of its chopped or bitten off shortening it. I actually do remember some individuals like that at Hastings.
+
+I looked back at these two individuals with tail lengths of \~178 mm, they were both trapped on the same day 6/22/2025 which early summer when we expect to see grown up juvenile-ish young adult kangaroo rats of the season. One of these individuals, tag 108 was captured again on 11/08/2025 and had a longer tail of 211 mm. This proves that these outliers really just represent younger individuals that are still growing.
+
+This could be the same case for the D. heermanni with a tail length \< 160 mm. Looking back in the notes of the data set the individual, tag F002 trapped on 6/30/2026 is a juvenile, proving that these outliers are due to lifestage and represent important seasonal and lifestage variation.
+
+#### Interpretation:
+
+This data hints that young adult kangaroo rats of the season may not differ greatly from other adults in head length or body length, but do differ greatly in tail length. This means tail length could have the potential to be a good indicator of age and life-stage in kangaroo rats and picking out the young of the year in data sets.
+
+### 3) Weight (animal only)
+
+Side note: When I was working on getting rid of NAs for weight values, for some values we had a bag + animal weight but no bag weight, and I could estimate the bag weight for about 5 values to fill up this data. TBD
+
+```{r}
+#Weight of animal versus head length graph
+df %>%
+  ggplot(aes(y= Weight_Animal_Only, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+#### Outliers:
+
+There seems to be 1 really crazy outlier for the animal weight where it is \< 30 grams which is insane, definitely should be deleted.
+
+#### Fix outliers:
+
+```{r}
+#Create new dataframe df.o (dataframe.outliers) which will include all my edits to remove outliers
+df.o <- df
+#Remove outlier
+df.o$Weight_Animal_Only[df$Weight_Animal_Only < 30] <- NA
+
+#Plot without the outliers
+df.o %>%
+  ggplot(aes(y= Weight_Animal_Only, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+4\) Ear length
+
+5\) Foot length
+
+6\) Foot width
+
+7\) Hind limb length
+
+8\) Toe length
+
+9\) Forelimb length
+
+10\) Finger length
+
+11\) Wrist width
+
+12\) Hand width
+
+13\) Head length
+
+14\) Maxillary head width
+
+15\) Bolea head width

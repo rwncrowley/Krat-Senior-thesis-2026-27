@@ -1,5 +1,5 @@
 ---
-title: "10.8.2026Kratfrequencydistributions"
+title: "10.8.2026: Kangaroo rat frequency distributions over size, sex and seasons"
 format: pdf
 editor: visual
 ---
@@ -16,8 +16,6 @@ library(here)
 library(dplyr)
 library(ggtext)
 
-#Load in clean data set
-df.hlo <- read.csv("10.8.2026KratCleanDataRMC.csv") #w/o head length outlier 36 m
 #Load in clean data set with all values
 df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
 ```
@@ -42,7 +40,7 @@ table(df$Species)
 
 ## General size frequency distributions for Head Length
 
-#### With all data points
+#### With all data points as of 8.01.2026
 
 Option here between a histogram and a density distribution. I like the density one better for looks, but probably tells you less if you don't know about the data for counts and the actual frequency.
 
@@ -57,46 +55,6 @@ df %>%
   ggplot(aes(x= Head_Length, color =  Species))+
 geom_density()
 ```
-
-#### Without head length outlier (\< 37 mm)
-
-```{r}
-#Create a histogram of the head length, separating by species without the outlier
-df.hlo %>%
-  ggplot(aes(x= Head_Length, fill =  Species))+
-geom_histogram(bins = 20, color = "black")
-
-#Create a density, smooth line frequency distribution, separating by species without the outlier
-df.hlo %>%
-  ggplot(aes(x= Head_Length, color =  Species))+
-geom_density()
-```
-
-Tail is left out of the trait distribution when the head length value \<37 mm is not included. Does this mean its actually an outlier?
-
-#### Spring data showing the outlier
-
-The more data collected over the summer filled in the gaps of the distribution that had been missing in this spring data analysis. This head length value \< 37 may not be an outlier after all??
-
-Observation demographics of old data: 27 heermanni, 14 venustus
-
-```{r}
-#Read in old data from the Spring, May 2026
-df.old <- read.csv("final_krat_data_2026.csv")
-
-#Remove rows where most data was not taken (recaps mostly)
-df.old <- df.old[-c(6, 10, 11, 12,13, 14,15, 16, 19, 20, 21, 22, 23, 24, 25, 34, 36, 37, 38, 39, 51, 57, 60, 61, 66), ]
-
-#Have 27 heermanni, 14 venustus in this analysis from the spring before summer data was taken + included
-table(df.old$Species)
-
-#Create a density, smooth line frequency distribution, separating by species
-df.old %>%
-  ggplot(aes(x= Head_Length, color =  Species))+
-geom_density()
-```
-
-Interpretation: The outlier (\< 37mm) in head length absolutely looks like one based on the old data with the lower sample size, but when more data was added the distribution became more normal.
 
 ## General size frequency distribution for Body Length
 
