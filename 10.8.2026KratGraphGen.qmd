@@ -235,15 +235,17 @@ df %>%
 
 #### Outliers:
 
-There seems to be 1 really crazy outlier for the animal weight where it is \< 30 grams which is insane, definitely should be deleted.
+There seems to be 1 really crazy outlier for the animal weight where it is \< 30 grams which is insane. This was D. venustus individual, tag 843 that has a animal only weight of 15 grams. This is a data taker error, as there are other data taker errors in this observation. This value of 15 grams is pretty much how much the bags weigh and the bag+animal weight is shown to 115 grams, so I can be very sure this animal is actually 100 grams not 15g.
+
+(This becomes clear once this was graphed again later, but there is another possible outlier for D. venustus that is less \<70 g. Looking through notes, this D. venustus individual, tag B135, trapped 6/23/2026 has a weight of 64 g and is a young adult female. This difference can largely be explained by a different lifestage in our data. (interestingly the tail is really long 222 mm disproving the last point of short tail = young, atleast in this case)
 
 #### Fix outliers:
 
 ```{r}
 #Create new dataframe df.o (dataframe.outliers) which will include all my edits to remove outliers
 df.o <- df
-#Remove outlier
-df.o$Weight_Animal_Only[df$Weight_Animal_Only < 30] <- NA
+#Fix outlier to true value, explained why above
+df.o$Weight_Animal_Only[df$Weight_Animal_Only == 15] <- 100
 
 #Plot without the outliers
 df.o %>%
@@ -252,13 +254,88 @@ df.o %>%
   geom_smooth(method = "lm")
 ```
 
-4\) Ear length
+#### Interpretation:
 
-5\) Foot length
+This data shows that animal weight and head length together are very good indicators of species between these two!! With some weights and head lengths that overlap and can be tricky. Around 75 - 85 g weight and 42 - 46 mm head length are the overlaps which species cannot be told here.
 
-6\) Foot width
+### 4) Ear length
 
-7\) Hind limb length
+```{r}
+#graph the ear length vs head length
+df %>%
+  ggplot(aes(y= Ear_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+#### Outliers:
+
+Theres a crazy outlier for ear length that is 125 mm, which is likely explained as a typing error. That is likely a tail length or body length.
+
+#### Fix outliers
+
+```{r}
+#Exclude any ear length values greater than 25 mm (already a crazy number for ear length here)
+df.o$Ear_Length[df$Ear_Length > 25] <- NA
+
+#Regraph with outliers removed
+df.o %>%
+  ggplot(aes(y= Ear_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+#### Interpretation:
+
+The ear length and head length seem to be pretty good at distinguishing between species for most values. Between 16-18 mm of ear length and 42-46 mm head length we cannot be sure of species.
+
+### 5) Foot length
+
+```{r}
+#Graph foot length vs head length
+df %>%
+  ggplot(aes(y= Foot_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+#### Outliers:
+
+I'm not really sure with this graph since more than half of the values are outside of the confidence intervals and the data is consistently super spread.
+
+Looking at notes for D. heermanni individual with footlength of 48 mm. Individual was tag #12 caught in 7/12/2025, and this is the same individual which had a data entry error for the ear of 125 mm (crazy insane totally data taker fault), this could suggest the data taker potential may not have typed this correctly??? But it doesn't seem to be that crazy for a kangaroo rat foot length or this species if looking into the literature.
+
+#### Interpretation:
+
+There are clear differences in mean foot length between these species, but this trait seems to be incredibly variable with a lot of overlap among them which would make it hard to distinguish based on foot length when looking at a single individual.
+
+### 6)  Foot width
+
+```{r}
+#Graph foot width vs head length
+df %>%
+  ggplot(aes(y= Foot_Width, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Outliers + Interpretation:
+
+D. venustus individual with \~6.5 mm foot width is pretty far out. Tag 843 has a foot width value of 6.25 mm when it was caught 4/11/2026 and then it has a lower foot width value of 5.62 mm when it was caught about 2.5 months later on 6/23/2026. It seems like this value should not decrease as the animal ages and could either suggest that this measurement is no good, or that maybe the muscle mass increases/ decreases over months??? (unlikely?)
+
+### 7) Hind limb length
+
+```{r}
+#Graph hind limb length vs head length
+df %>%
+  ggplot(aes(y= Hind_Limb_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Outliers:
+
+The data seems pretty spread
 
 8\) Toe length
 
