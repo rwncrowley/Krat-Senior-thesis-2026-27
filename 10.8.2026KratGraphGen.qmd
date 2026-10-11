@@ -1,6 +1,7 @@
 ---
-title: "10.08.2026: Kangaroo rat Measurement outliers and graphs"
-format: html
+title: "10.08.2026: Kangaroo rat Measurement outliers and initial graphs"
+by: Rowan M. Crowley
+format: pdf
 editor: visual
 ---
 
@@ -303,13 +304,57 @@ df %>%
 
 I'm not really sure with this graph since more than half of the values are outside of the confidence intervals and the data is consistently super spread.
 
-Looking at notes for D. heermanni individual with footlength of 48 mm. Individual was tag #12 caught in 7/12/2025, and this is the same individual which had a data entry error for the ear of 125 mm (crazy insane totally data taker fault), this could suggest the data taker potential may not have typed this correctly??? But it doesn't seem to be that crazy for a kangaroo rat foot length or this species if looking into the literature.
+Looking at notes for D. heermanni individual with footlength of 48 mm. Individual was tag #12 caught in 7/12/2025, and this is the same individual which had a data entry error for the ear of 125 mm (crazy insane totally data taker fault), this could suggest the data taker potential may not have typed this correctly???
+
+```{r}
+#Show individual heermanni with 48 mm foot length
+df |> filter(Tag == 12)
+
+#Get rid of foot length value of tag #12 which had 48 foot as heermanni
+df.o$Foot_Length[df$Tag == 12] <- NA
+
+#Check that it worked -- it did!!
+df.o$Tag[df.o$Foot_Length == 48]
+
+```
+
+Looking at the venustus who had a footlength of 48 mm on the graph.
+
+Tag #910 has a foot length of 48 mm, its other measurements like 239 mm tail and 20 mm ear length suggest this was a large individual in general and may represent the largest range.
+
+Tag #108 has been caught multiple times and measured twice. First time it was measured 6.22.2025 it was 48 foot and then 6 months later 11. 8. 2025 it was measured as 43 foot. I dont think this is biologically possible and the 48 foot is likely a data taker error... maybe it was actually 38 mm??? But for now I will get rid of this measurement.
+
+```{r}
+#Show tag of the ones with 48 mm foot -- which are 910, 108 (12 has already been dealt with)
+df$Tag[df$Foot_Length > 47.5] 
+
+#Show tag 910 
+df |> filter(Tag == 910)
+
+#Show tag 108
+df |> filter(Tag == 108) 
+
+#Tag 108 has multiple observations, lets get rid of just the 48 mm one
+df.o <- df.o %>%
+  mutate(Foot_Length = ifelse(Tag == 108 & Foot_Length == 48, NA, Foot_Length))
+#Check that it worked-- it worked!!
+df.o |> filter(Tag == 108)
+
+#Regraph with outliers removed
+df.o %>%
+  ggplot(aes(y= Foot_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+#Now just tag # 910 is left since we decided to keep it
+df.o |> filter(Foot_Length > 47.5)
+```
 
 #### Interpretation:
 
 There are clear differences in mean foot length between these species, but this trait seems to be incredibly variable with a lot of overlap among them which would make it hard to distinguish based on foot length when looking at a single individual.
 
-### 6)  Foot width
+### 6) Foot width
 
 ```{r}
 #Graph foot width vs head length
@@ -323,6 +368,19 @@ df %>%
 
 D. venustus individual with \~6.5 mm foot width is pretty far out. Tag 843 has a foot width value of 6.25 mm when it was caught 4/11/2026 and then it has a lower foot width value of 5.62 mm when it was caught about 2.5 months later on 6/23/2026. It seems like this value should not decrease as the animal ages and could either suggest that this measurement is no good, or that maybe the muscle mass increases/ decreases over months??? (unlikely?)
 
+Otherwise, foot width seems to show a clear difference in means between the two species which may be somewhat equivalent of a difference as foot length is. There is still a lot of overlap between the two.
+
+```{r}
+#Get rid of 6.25 mm foot width outlier
+df.o$Foot_Width[df$Foot_Width > 6] <- NA
+
+#Graph foot width versus head length without the outliers
+df.o %>%
+  ggplot(aes(y= Foot_Width, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
 ### 7) Hind limb length
 
 ```{r}
@@ -335,20 +393,223 @@ df %>%
 
 ### Outliers:
 
-The data seems pretty spread
+The data seems pretty spread, but the 36 mm head length heermanni seems to be a weird outlier. I had looked at this before, but I will try this graph without it to see if the linear regression slope changes. It does seem to change the slope in this case to be more of an equal slope with the venustus.
 
-8\) Toe length
+```{r}
+#Use the head length outlier subtracted dataframe for this
+df.hlo |> 
+  ggplot(aes(y= Hind_Limb_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
 
-9\) Forelimb length
+#### Interpretation:
 
-10\) Finger length
+This is a clear difference in slope that still overlap but are shown to have different y-intercept values showing a general difference between the species.
 
-11\) Wrist width
+### 8) Toe length
 
-12\) Hand width
+```{r}
+#Toe length vs head length graph
+df |>
+ggplot(aes(y= Toe_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
 
-13\) Head length
+#### Outliers:
 
-14\) Maxillary head width
+Toe lengths less than 10 mm do seem to be dragging the slope down on toe length. Those should be taken out and were likely measured wrong or could represent juveniles with short feet already. They seem to have adult measurements that are pretty normal and average for kangaroo rats, so I will get rid of these outliers.
 
-15\) Bolea head width
+```{r}
+#Show outliers all measurements
+df |> filter(Toe_Length < 10)
+
+#Remove toe length measurements less than 10 mm
+df.o$Toe_Length[df$Toe_Length < 10] <- NA
+
+#Graph toe length vs head length without these outliers
+df.o |> 
+  ggplot(aes(y= Toe_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+#### Interpretation:
+
+The toe lengths seem to be very spread and variable, but do have clear differences in mean.
+
+### 9) Forelimb length
+
+```{r}
+#Graph forelimb length vs head length
+df |>
+ggplot(aes(y= Forelimb_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Outliers:
+
+The greater than 39.01 mm forelimb lengths seem like outliers. Looking at the observation of heermanni thats over 42 mm the finger length which is included in this measurement doesnt seem exceptionally long (8 mm) and I will remove it, along with other really big values of this.
+
+The two lower values of venustus less than 29 mm also may be outliers??? The observations are normal with normal adult measurements, could just be low or could be a measurement error — once higher outliers are removed I will look back at them. With higher outliers removed they still look far out.
+
+```{r}
+#Show observations with forelimb length greater than 42 mm
+df |> filter(Forelimb_Length > 42)
+
+#Remove forelimb lengths greater than 42 mm
+df.o$Forelimb_Length[df$Forelimb_Length > 42] <- NA
+
+#Show observations with forelimb length less than 29 mm 
+df |> filter(Forelimb_Length < 29)
+
+#Remove forelimb length less than 29 mm
+df.o$Forelimb_Length[df$Forelimb_Length < 29] <- NA
+
+#Remove head length outlier
+df.o$Head_Length[df$Head_Length < 37] <- NA
+
+#Remove forelimb lengths greater than 39.01 mm
+df.o$Forelimb_Length[df$Forelimb_Length > 39.01] <- NA
+
+
+#Graph forelimb length vs head length without outliers
+df.o |>
+  ggplot(aes(y= Forelimb_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Interpretation:
+
+This graphs show pretty big differences in slope and mean for forelimb length and not very much overlap in confidence intervals, however there are a lot of overlapping values that exist for both species.
+
+### 10) Finger length
+
+```{r}
+#Graph the finger length versus head length
+df |>
+ggplot(aes(y= Finger_Length, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Outliers:
+
+There don't seem to be any crazy outliers except maybe the 6 mm and 11 mm values, but these may just represent the highest and lowest ranges.
+
+### Interpretation:
+
+This graph shows some pretty flat slopes meaning finger length likely does not increase with head length or body size. This graph also shows only 2 overlapping values of finger length for these species. Additionally, the confidence intervals do not overlap and show some separation.
+
+### 11) Wrist width
+
+```{r}
+#Graph wrist width versus head length
+df |>
+ggplot(aes(y= Wrist_Width, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Outlier:
+
+There is a crazy outlier here in the 30s for a measurement ranging between 2 -4 mm. This is definitely a data taker error. Is it possible the decimal point was just not added? – Tag \# 12 The wrist width reads: 30.37 could this really be 3.37?? This is the same observation which had an ear length of 125 mm and a foot length of 48. This data taker was making a lot of mistakes and typos.
+
+```{r}
+#Show observation with the outlier
+df |> filter(Wrist_Width > 30)
+
+#Remove outlier
+df.o$Wrist_Width[df$Wrist_Width > 30] <- NA
+
+#Graph without the outlier
+df.o |>
+  ggplot(aes(y= Wrist_Width, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+
+# Also remove wrist width values less than 2.47 mm
+df.o$Wrist_Width[df$Wrist_Width < 2.47] <- NA
+
+#Regraph with the new outlier removals
+df.o |>
+  ggplot(aes(y= Wrist_Width, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Interpretation:
+
+The wrist widths seem to be very variable and not too different between the species. If there is a difference it is very slight. May be inclined not to include this variable in the PCA.
+
+### 12) Hand width
+
+```{r}
+#Graph hand width versus head length
+df |>
+ggplot(aes(y= Hand_Width, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Outliers:
+
+There don't seem to be too many true outliers in this. It is a little weird since it is such a small measurement that was measured with the ruler not the caliper meaning some precision was lost.
+
+### Interpretation:
+
+Head length seems to be doing most of the differentiating in this measurement. It is likely that the hand widths do not vary greatly between these species.
+
+### 13) Head length
+
+This is our size proxy measurement.
+
+### 14) Maxillary head width
+
+```{r}
+#graph maxillary head width vs head length
+df |>
+  ggplot(aes(y= Maxillary_Head_Width, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Outliers:
+
+The venustus with a maxillary head width greater than 36 seems like an outlier
+
+```{r}
+#Remove outlier greater than 36 mm maxillary head width
+df.o$Maxillary_Head_Width[df$Maxillary_Head_Width > 36] <- NA
+
+#Regraph data without the outlier
+df.o |>
+  ggplot(aes(y= Maxillary_Head_Width, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+#### Interpretation:
+
+This data is pretty spread and there seems to be consistent crazy outliers for both species. There does seem to be clustering for both, however that would mean when taking into account both head width and length one might be able to more accurately identify species.
+
+### 15) Bolea head width
+
+```{r}
+#Graph the bolea head width vs head length
+df |>
+  ggplot(aes(y= Bolea_Head_Width, x= Head_Length, color =  Species))+
+  geom_point()+
+  geom_smooth(method = "lm")
+```
+
+### Outliers:
+
+There doesnt seem to be too many really crazy outliers, except the venustus in the middle of the heermanni. for that individual it isnt that its head length or bolea head width measurement is out of the ordinary for its species, just the combination of both values together that makes it stand out.
+
+### Interpretation:
+
+It is interesting to see different slopes for these species. This data suggests that as the skull of heermanni grow the bolea grow wider and as the skull of venustus grow the bolea grow narrower. There is documentation in the literature of heermanni being known as a wider faced group and the venustus as the narrowed-faced group. Is this the same as what is documented there or does this data seem weird for that?

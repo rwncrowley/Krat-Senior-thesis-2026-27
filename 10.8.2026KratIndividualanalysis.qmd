@@ -1,0 +1,89 @@
+---
+title: "10.8.2026KratIndividualgrowth"
+format: html
+editor: visual
+---
+
+## Set up
+
+```{r}
+library(ggplot2)
+library(brms)
+library(ggeffects)
+library(tidyverse)
+library(readxl)
+library(here)
+library(dplyr)
+library(ggtext)
+
+#Load in clean data set
+df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
+head(df)
+```
+
+## Look at Individuals across time
+
+```{r}
+unique(df$Tag)
+
+Tag_counts <- table(df$Tag)
+Tag_counts[Tag_counts > 1]
+
+```
+
+### Tag 108
+
+```{r}
+colnames(df)
+```
+
+```{r}
+#Is a venustus
+df %>%
+  filter(Tag == 108) 
+
+#This 48 foot length value is bogus
+```
+
+```{r}
+#Is a venustus
+df %>%
+  filter(Tag == 817) 
+
+#This 48 foot length value is bogus
+```
+
+```{r}
+#Is a venustus
+df %>%
+  filter(Tag == 825) 
+
+#head length could be bogus or reading caliper upside down error
+#Foot width bad, wrist width bad, ear length could explain by error, tail length is weird
+```
+
+```{r}
+df %>%
+  filter(Tag == 843) 
+
+#Foot width is bad, foot length weird?? -- same data point where data taker was messing up
+```
+
+```{r}
+#is a venustus
+df %>%
+  filter(Tag == 948) 
+
+df %>%
+  filter(Tag == 948) |>
+  ggplot(aes(y= Foot_Length, x= Date))+
+  geom_point()
+#All these values suggest error for these measurements
+```
+
+```{r}
+df %>%
+  filter(Tag == "F098") 
+#Suggests error in measurements, 1 month difference
+
+```
