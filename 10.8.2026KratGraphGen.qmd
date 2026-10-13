@@ -1,6 +1,6 @@
 ---
 title: "10.08.2026: Kangaroo rat Measurement outliers and initial graphs"
-by: Rowan M. Crowley
+by: "Rowan M. Crowley"
 format: pdf
 editor: visual
 ---
@@ -613,3 +613,9 @@ There doesnt seem to be too many really crazy outliers, except the venustus in t
 ### Interpretation:
 
 It is interesting to see different slopes for these species. This data suggests that as the skull of heermanni grow the bolea grow wider and as the skull of venustus grow the bolea grow narrower. There is documentation in the literature of heermanni being known as a wider faced group and the venustus as the narrowed-faced group. Is this the same as what is documented there or does this data seem weird for that?
+
+# Create CSV without outliers
+
+```{r}
+write_csv(df.o, "10.12.2026KratCleanDataRMC.csv")
+```

@@ -1,10 +1,11 @@
 ---
 title: "Raw to Clean data"
+by: "Rowan M. Crowley"
 format: html
 editor: visual
 ---
 
-This code steps 1-5 was written as part of an assignment for Data Science for EEB class in 2026 using this same data set by Yeonwoo Lee and Mackenzie Black. And I (Rowan Crowley) will now be including and cleaning more recent data taken between January 29, 2026 and July 26, 2026.
+This code steps 1-5 was written as part of an assignment for Data Science for EEB class in 2026 using this same data set by Yeonwoo Lee and Mackenzie Black. And I will now be including and cleaning more recent data taken between January 29, 2026 and July 30, 2026.
 
 ## Set up + Load data
 

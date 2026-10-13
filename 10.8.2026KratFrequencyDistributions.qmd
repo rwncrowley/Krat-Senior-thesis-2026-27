@@ -1,6 +1,6 @@
 ---
 title: "10.8.2026: Kangaroo rat frequency distributions over size, sex and seasons"
-by: Rowan M. Crowley
+by: "Rowan M. Crowley"
 format: pdf
 editor: visual
 ---
@@ -19,6 +19,9 @@ library(ggtext)
 
 #Load in clean data set with all values
 df <- read.csv("RC2026_KRAT_DATA.08.01.csv")
+
+#copy data
+dat <- read.csv("RC2026_KRAT_DATA.08.01.csv")
 ```
 
 # Goal
@@ -37,6 +40,9 @@ df <- df[-c(6, 10, 11, 12,13, 14,15, 16, 19, 20, 21, 22, 23, 24, 25, 34, 36, 37,
 
 #Show number of each species included in analysis: 36 heermanni, 24 venustus
 table(df$Species)
+
+#With all observations, including those without measurement data
+table(dat$Species)
 ```
 
 ## General size frequency distributions for Head Length
@@ -85,6 +91,18 @@ df$Season <- NA
 
 # Extract month and assign season
 df <- df %>%
+  mutate(
+    Month = month(Date),
+    Season = case_when(
+      Month %in% c(12, 1, 2) ~ "Winter",
+      Month %in% c(3, 4, 5)  ~ "Spring",
+      Month %in% c(6, 7, 8)  ~ "Summer",
+      Month %in% c(9, 10, 11) ~ "Fall"
+    )
+  )
+
+#Do the same for copy data
+dat <- dat %>%
   mutate(
     Month = month(Date),
     Season = case_when(
@@ -185,7 +203,7 @@ This map probably doesn't mean much due to the low sample size of males.
 
 ```{r}
 #Create a bar plot, separating by season and sex
-dfhe %>%
+dat %>% filter(Species == "Dipodomys heermanni") |>
   ggplot(aes(x= Season, fill=Sex))+
 geom_bar()
 ```
@@ -213,4 +231,15 @@ geom_histogram(bins = 20, color = "black")
 
 #Sexual demographics
 table(dfve$Sex)
+```
+
+```{r}
+dat$Date <- as.Date(dat$Date, format = "%Y-%m-%d")
+dat$Date
+
+dat |>  ggplot(aes(x= Date, y= Tag, color =  Species))+
+geom_point() +
+  scale_x_date(date_labels = "%B")     # Displays ONLY the full month name
+
+ggsave("KratDatemo.v.tag.png")
 ```
